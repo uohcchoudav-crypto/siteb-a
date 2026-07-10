@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guyonnet Animation - Garderie Éphémère & Animations</title>
+    <style>
+        /* Réinitialisation et base */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #3d2a45;
+            background-color: #f5eefc; /* Fond Lilas doux */
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- ÉTOILES FILANTES COULEURS ALÉATOIRES --- */
+        .espace-etoiles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .etoile-filante {
+            position: absolute;
+            left: 50%; top: 50%;
+            height: 2px;
+            background: linear-gradient(-45deg, var(--clr-etoile, #ffffff), rgba(255, 255, 255, 0));
+            border-radius: 999px;
+            filter: drop-shadow(0 0 8px var(--clr-etoile, #ffffff));
+            animation: effetFilant 4s ease-in-out infinite;
+            opacity: 0;
+        }
+
+        .etoile-filante::before, .etoile-filante::after {
+            content: '';
+            position: absolute;
+            top: calc(50% - 1px); right: 0;
+            height: 2px;
+            background: linear-gradient(-45deg, rgba(255, 255, 255, 0), var(--clr-etoile, #ffffff), rgba(255, 255, 255, 0));
+            transform: translateX(50%) rotate(45deg);
+            border-radius: 100%;
+            animation: eclat 4s ease-in-out infinite;
+        }
+        .etoile-filante::after { transform: translateX(50%) rotate(-45deg); }
+
+        .ef-1 { top: 8%; left: 20%; width: 120px; animation-delay: 0s; animation-duration: 3s; }
+        .ef-2 { top: 15%; left: 70%; width: 160px; animation-delay: 4s; animation-duration: 3.5s; }
+        .ef-3 { top: 35%; left: 40%; width: 90px; animation-delay: 1.5s; animation-duration: 4s; }
+        .ef-4 { top: 50%; left: 80%; width: 140px; animation-delay: 6s; animation-duration: 3.2s; }
+        .ef-5 { top: 65%; left: 15%; width: 110px; animation-delay: 9s; animation-duration: 4.5s; }
+        .ef-6 { top: 75%; left: 60%; width: 130px; animation-delay: 3s; animation-duration: 3.8s; }
+        .ef-7 { top: 90%; left: 30%; width: 100px; animation-delay: 11s; animation-duration: 4.2s; }
+        .ef-8 { top: 25%; left: 85%; width: 150px; animation-delay: 7.5s; animation-duration: 3.5s; }
+
+        @keyframes effetFilant {
+            0% { transform: rotate(-35deg) translateX(0) scale(0); opacity: 0; }
+            1% { opacity: 1; transform: rotate(-35deg) translateX(0) scale(1); }
+            12% { transform: rotate(-35deg) translateX(-300px) scale(1); opacity: 0; }
+            100% { transform: rotate(-35deg) translateX(-300px) scale(0); opacity: 0; }
+        }
+
+        @keyframes eclat {
+            0% { width: 0; }
+            5% { width: 15px; }
+            12% { width: 0; }
+            100% { width: 0; }
+        }
+
+        /* --- EN-TÊTE : BANNIÈRE DÉGRADÉE --- */
+        .header-banner {
+            background: linear-gradient(135deg, #ff1493 0%, #ff69b4 35%, #ff7f50 70%, #ffaa00 100%);
+            padding: 30px 20px;
+            border-bottom: 5px solid #d4a35d;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            min-height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .header-banner::before, .header-banner::after {
+            content: '✨ 🎈 ✨'; position: absolute; font-size: 24px; opacity: 0.7; animation: flottaison 3s ease-in-out infinite alternate;
+        }
+        .header-banner::before { left: 5%; }
+        .header-banner::after { right: 5%; animation-direction: alternate-reverse; }
+
+        @keyframes flottaison { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+
+        .logo-container {
+            background-color: rgba(255, 255, 255, 0.95); padding: 12px 35px; border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: inline-block; position: relative;
+            animation: glissementTranquille 5s ease-in-out forwards;
+        }
+        .logo-image { max-width: 100%; height: auto; width: 430px; display: block; }
+
+        @keyframes glissementTranquille {
+            0% { transform: translateX(-100vw); opacity: 0; }
+            35% { transform: translateX(15vw); opacity: 1; }
+            70% { transform: translateX(-5vw); }
+            100% { transform: translateX(0); }
+        }
+
+        @media (max-width: 600px) {
+            .header-banner { padding: 15px 10px; min-height: 120px; }
+            .header-banner::before, .header-banner::after { display: none; }
+            .logo-container { padding: 8px 20px; }
+            .logo-image { width: 260px; }
+        }
+
+        /* --- ZONE CONTENU --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+        /* --- ENCADRÉ PRINCIPAL : GARDERIE ÉPHÉMÈRE --- */
+        .hero {
+            text-align: center; margin-bottom: 45px; background: #ffffff; padding: 50px 40px;
+            border-radius: 16px; border: 1px solid #ebdcb9; box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+            position: relative; overflow: hidden;
+        }
+        .hero-decor-kids { font-size: 28px; margin-bottom: 15px; display: block; letter-spacing: 5px; position: relative; z-index: 2; }
+
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-text-side { text-align: left; }
+        h1 { color: #c45a45; font-size: 36px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .hero-subtitle { font-size: 18px; font-weight: bold; color: #5d3577; margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hero-intro-text { font-size: 17px; color: #3d2a45; margin: 0 0 25px 0; line-height: 1.6; text-align: justify; }
+
+        .hero-image-side-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+        .illustration-clean-small {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 2px solid #ffcc66;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .illustration-clean-small:hover { transform: scale(1.03); }
+
+        .hero-mix-box {
+            background-color: #fffaf0; border: 2.5px dashed #ffaa00; border-radius: 12px; padding: 35px 30px; margin-top: 40px; text-align: left;
+            position: relative; z-index: 2;
+        }
+        .mix-slogan { font-size: 20px; font-weight: 800; color: #d35400; text-align: center; margin-bottom: 25px; text-transform: uppercase; border-bottom: 2px solid #ffcc66; padding-bottom: 12px; }
+        .mix-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px 25px; }
+        .mix-item { display: flex; gap: 15px; align-items: start; }
+        .mix-icon { font-size: 28px; line-height: 1; }
+
+        .mix-text h3 { margin: 0 0 8px 0; color: #5d3577; font-size: 17px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mix-text p { margin: 0; font-size: 15px; color: #3d2a45; text-align: justify; line-height: 1.5; }
+
+        .hero-bg-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.12; pointer-events: none; }
+        .paint-stroke { position: absolute; border-radius: 20px; transform: rotate(-25deg); }
+        .stroke-1 { background-color: #ff1493; width: 350px; height: 25px; top: 15px; left: -40px; }
+        .stroke-2 { background-color: #ff7f50; width: 500px; height: 18px; bottom: 20px; left: 20%; }
+        .stroke-3 { background-color: #ffaa00; width: 280px; height: 30px; top: -10px; right: 50px; border-radius: 50% 20px 50% 20px; }
+        .stroke-4 { background-color: #ff1493; width: 200px; height: 20px; bottom: -5px; right: -20px; }
+
+        @media (max-width: 950px) {
+            .hero-layout { grid-template-columns: 1fr; gap: 30px; }
+            .hero-image-side-grid { order: -1; max-width: 500px; margin: 0 auto; width: 100%; }
+            .hero-text-side { text-align: center; }
+            .hero-text-side h1 { font-size: 30px; }
+            .hero-intro-text { text-align: center; }
+        }
+        @media (max-width: 600px) {
+            .mix-grid { grid-template-columns: 1fr; gap: 20px; }
+            .hero-image-side-grid { grid-template-columns: 1fr; }
+            .illustration-clean-small { height: 140px; }
+            .hero { padding: 30px 20px; }
+        }
+
+        /* --- SECTION : SERVICES À DOMICILE --- */
+        .services-domicile-section {
+            background-color: #ffffff; padding: 40px 30px; border-radius: 12px; margin-bottom: 45px;
+            border: 1px solid #ebdcb9; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: grid; grid-template-columns: 42% 58%; gap: 35px; align-items: center;
+        }
+
+        .services-carousel-wrapper { position: relative; width: 100%; }
+        .services-carousel-container { overflow: hidden; width: 100%; border-radius: 10px; border: 3px solid #ff7f50; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .services-carousel-track { display: flex; transition: transform 0.4s ease-in-out; will-change: transform; }
+        .services-carousel-item { flex: 0 0 100%; width: 100%; cursor: pointer; }
+        .services-carousel-item img { width: 100%; height: 280px; object-fit: cover; display: block; }
+
+        .services-carousel-btn {
+            position: absolute; top: 50%; transform: translateY(-50%); background-color: #ff7f50; color: #ffffff; border: 2px solid #ffffff;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: background 0.2s; z-index: 5;
+        }
+        .services-carousel-btn:hover { background-color: #d35400; }
+        .sc-btn-left { left: -15px; } .sc-btn-right { right: -15px; }
+
+        .services-content h2 { margin-top: 0; color: #c45a45; font-size: 26px; text-transform: uppercase; }
+        .services-content h2::after { display: none; }
+        .service-item-block { margin-bottom: 25px; }
+        .service-item-block h3 { color: #5d3577; font-size: 20px; margin: 0 0 5px 0; display: flex; align-items: center; gap: 10px; }
+        .service-item-block p { margin: 0; font-size: 16px; color: #3d2a45; text-align: justify; line-height: 1.6; }
+
+        @media (max-width: 850px) {
+            .services-domicile-section { grid-template-columns: 1fr; padding: 30px 20px; }
+            .services-carousel-wrapper { max-width: 450px; margin: 0 auto 15px auto; }
+            .sc-btn-left { left: 10px; } .sc-btn-right { right: 10px; }
+        }
+
+        /* --- SECTION 1 : CLUB ENFANTS ÉTÉ --- */
+        .summer-club-section {
+            background: linear-gradient(135deg, #fffcf0 0%, #fff4d4 100%);
+            padding: 65px 30px 45px 30px; border-radius: 12px; margin-bottom: 45px;
+            border: 2px solid #ffaa00; box-shadow: 0 8px 20px rgba(255, 170, 0, 0.15);
+            position: relative; overflow: visible;
+        }
+
+        .badge-wrapper { position: absolute; top: -45px; right: -35px; width: 210px; height: 210px; z-index: 10; display: flex; align-items: center; justify-content: center; }
+        .badge-magic-ring { position: absolute; width: 175px; height: 175px; border: 3px dashed rgba(0, 240, 255, 0.6); border-radius: 50%; animation: rotationAnneau 6s linear infinite; }
+        .badge-magic-ring::before { content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 50%; }
+
+        .star-badge {
+            width: 155px; height: 155px; background: linear-gradient(135deg, #00f0ff 0%, #00b3dc 100%);
+            color: #ffffff; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 900; font-size: 15px; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(0, 179, 220, 0.4); text-shadow: 1px 1px 3px rgba(0,0,0,0.4); border: 2px solid #ffffff; position: relative; z-index: 2;
+            clip-path: polygon(50% 0%, 65% 15%, 85% 15%, 85% 35%, 100% 50%, 85% 65%, 85% 85%, 65% 85%, 50% 100%, 35% 85%, 15% 85%, 15% 65%, 0% 50%, 15% 35%, 15% 15%, 35% 15%);
+            animation: dynamiquePulsation 2.5s ease-in-out infinite alternate;
+        }
+        .star-badge-text { padding: 12px; }
+        .tiny-star { position: absolute; color: #00f0ff; font-size: 18px; text-shadow: 0 0 5px rgba(255,255,255,1); z-index: 3; animation: scintillementEtoile 1.5s ease-in-out infinite alternate; }
+        .ts-1 { top: 15px; left: 30px; animation-delay: 0s; font-size: 14px; }
+        .ts-2 { top: -5px; right: 50px; animation-delay: 0.3s; font-size: 22px; }
+        .ts-3 { bottom: 25px; left: 10px; animation-delay: 0.6s; }
+        .ts-4 { bottom: 5px; right: 35px; animation-delay: 0.9s; font-size: 16px; }
+
+        @keyframes dynamiquePulsation { 0% { transform: rotate(3deg) scale(0.96); } 100% { transform: rotate(8deg) scale(1.05); } }
+        @keyframes rotationAnneau { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes scintillementEtoile { 0% { opacity: 0.3; transform: scale(0.8) rotate(0deg); } 100% { opacity: 1; transform: scale(1.2) rotate(15deg); } }
+
+        .summer-club-section h2 { text-align: center; color: #d35400; font-size: 28px; margin-top: 15px; margin-bottom: 10px; text-transform: uppercase; }
+        .summer-subtitle { text-align: center; font-size: 18px; font-weight: bold; color: #27ae60; margin: 0 0 30px 0; text-transform: uppercase; }
+
+        .summer-grid-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px; }
+        .summer-card { background: #ffffff; padding: 20px; border-radius: 12px; border-left: 5px solid #ffaa00; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .summer-card h3 { color: #e67e22; margin: 0 0 10px 0; font-size: 18px; }
+        .summer-card ul { margin: 0; padding-left: 20px; color: #3d2a45; }
+        .summer-card li { margin-bottom: 5px; }
+
+        @media (max-width: 768px) { .summer-grid-details { grid-template-columns: 1fr; } .badge-wrapper { display: none; } }
+
+        /* --- CARROUSEL CLUB --- */
+        .carousel-wrapper { position: relative; max-width: 100%; margin: 0 auto 30px auto; padding: 0 45px; }
+        .carousel-container { overflow: hidden; width: 100%; border-radius: 12px; }
+        .carousel-track { display: flex; gap: 15px; transition: transform 0.5s ease-in-out; will-change: transform; }
+        .carousel-item { flex: 0 0 calc(33.333% - 10px); background-color: #ffffff; padding: 6px; border-radius: 10px; border: 2px solid #ffcc66; box-shadow: 0 4px 8px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; }
+        .carousel-item:hover { transform: scale(1.03); }
+        .carousel-item img { width: 100%; height: 160px; object-fit: cover; border-radius: 6px; display: block; }
+
+        .carousel-btn {
+            position: absolute; top: 50%; transform: translateY(-50%); background-color: #ffaa00; color: #ffffff; border: 2px solid #ffffff;
+            width: 38px; height: 38px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: background 0.2s, transform 0.2s; z-index: 5;
+        }
+        .carousel-btn:hover { background-color: #e67e22; transform: translateY(-50%) scale(1.1); }
+        .c-btn-left { left: 0; } .c-btn-right { right: 0; }
+
+        @media (max-width: 768px) {
+            .carousel-item { flex: 0 0 calc(50% - 8px); }
+            .carousel-wrapper { padding: 0 35px; }
+            .carousel-btn { width: 32px; height: 32px; font-size: 14px; }
+        }
+        @media (max-width: 480px) {
+            .carousel-item { flex: 0 0 100%; }
+            .carousel-item img { height: 180px; }
+        }
+
+        .summer-actions { text-align: center; margin-bottom: 30px; }
+        .btn-summer-photos { display: inline-block; background-color: #27ae60; color: #ffffff; border: none; padding: 10px 25px; font-weight: bold; border-radius: 20px; text-transform: uppercase; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.3s, transform 0.2s; cursor: pointer; font-family: inherit; }
+        .btn-summer-photos:hover { background-color: #219653; transform: translateY(-2px); }
+
+        .summer-info-banner { background: #e67e22; color: #ffffff; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 16px; }
+        .summer-info-banner span { display: inline-block; margin: 0 15px; }
+
+        /* --- SECTION 2 : SOIRÉES JEUX AVEC BÉA --- */
+        .games-evening-section {
+            background: linear-gradient(135deg, #f0faff 0%, #e1f5fe 100%);
+            padding: 45px 30px; border-radius: 12px; margin-bottom: 45px;
+            border: 2px solid #03a9f4; box-shadow: 0 8px 20px rgba(3, 169, 244, 0.15);
+            position: relative; overflow: hidden;
+        }
+
+        .games-title-container { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        .games-bea-icon img { width: 110px; height: auto; border-radius: 50%; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: block; }
+        .games-evening-section h2 { text-align: left; color: #01579b; font-size: 28px; margin: 0; text-transform: uppercase; }
+        .games-subtitle { text-align: center; font-size: 18px; font-weight: bold; color: #5d3577; margin: -10px 0 35px 0; text-transform: uppercase; }
+
+        .games-grid-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .games-card { background: #ffffff; padding: 20px; border-radius: 12px; border-left: 5px solid #03a9f4; box-shadow: 0 4px 10px rgba(0,0,0,0.03); text-align: center; }
+        .games-card h3 { color: #01579b; margin: 0 0 10px 0; font-size: 17px; text-transform: uppercase; }
+        .games-card ul { margin: 0; padding: 0; list-style: none; color: #3d2a45; }
+        .games-card li { margin-bottom: 5px; font-size: 14px; text-align: justify; line-height: 1.4; }
+
+        .games-actions { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; }
+        .btn-games-booking { display: inline-block; background-color: #aa00ff; color: #ffffff; border: none; padding: 12px 25px; font-weight: bold; border-radius: 25px; text-transform: uppercase; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.3s, transform 0.2s; cursor: pointer; font-family: inherit; }
+        .btn-games-booking:hover { background-color: #d500f9; transform: translateY(-2px); }
+
+        .btn-games-gallery { display: inline-block; background-color: #0288d1; color: #ffffff; border: none; padding: 12px 25px; font-weight: bold; border-radius: 25px; text-transform: uppercase; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.3s, transform 0.2s; cursor: pointer; font-family: inherit; }
+        .btn-games-gallery:hover { background-color: #01579b; transform: translateY(-2px); }
+
+        @media (max-width: 768px) {
+            .games-grid-details { grid-template-columns: 1fr; }
+            .games-title-container { flex-direction: column; text-align: center; }
+            .games-evening-section h2 { text-align: center; }
+            .games-actions { flex-direction: column; align-items: center; gap: 10px; }
+            .btn-games-booking, .btn-games-gallery { width: 100%; max-width: 320px; text-align: center; }
+        }
+
+        h2 { color: #5d3577; font-size: 24px; margin: 40px 0 20px 0; position: relative; padding-bottom: 10px; }
+        h2::after { content: ''; position: absolute; left: 0; bottom: 0; width: 60px; height: 3px; background-color: #d4a35d; }
+
+        .badges-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 50px; }
+        .badge-card { background-color: #ffffff; border: 1px solid #ebdcb9; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.01); transition: transform 0.2s; }
+        .badge-card:hover { transform: translateY(-3px); }
+        .badge-icon { font-size: 32px; margin-bottom: 10px; }
+        .badge-text { font-size: 15px; font-weight: bold; color: #3d2a45; text-transform: uppercase; }
+
+        footer { margin-top: 60px; font-size: 14px; color: #7a6b82; text-align: center; border-top: 1px solid #ebdcb9; padding: 25px 0; line-height: 1.8; position: relative; }
+        .fb-button-container { margin-bottom: 15px; }
+        .fb-link { display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background-color: #1877f2; color: white; border-radius: 50%; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .fb-link:hover { transform: scale(1.1); }
+        .siret-text { font-size: 13px; color: #9a8b1a; font-weight: 500; margin-top: 5px; }
+
+        /* --- POP-UP CONTACT --- */
+        .contact-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(61, 42, 69, 0.6);
+            backdrop-filter: blur(4px); z-index: 10000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .contact-modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .contact-modal-box {
+            background-color: #ffffff; width: 90%; max-width: 450px; padding: 30px; border-radius: 15px;
+            border: 3px solid #aa00ff; box-shadow: 0 10px 30px rgba(0,0,0,0.25); text-align: center; position: relative; transform: scale(0.8); transition: transform 0.3s ease;
+        }
+        .contact-modal-overlay.active .contact-modal-box { transform: scale(1); }
+        .contact-modal-close { position: absolute; top: 12px; right: 15px; font-size: 24px; background: none; border: none; color: #a08da8; cursor: pointer; }
+        .contact-modal-box h3 { margin: 0 0 10px 0; color: #5d3577; font-size: 22px; text-transform: uppercase; }
+        .contact-modal-box p { margin: 0 0 25px 0; font-size: 15px; color: #65526e; }
+        .modal-contact-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px 20px; margin-bottom: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; color: #ffffff; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .modal-contact-btn:last-child { margin-bottom: 0; }
+        .btn-email { background-color: #e67e22; } .btn-phone { background-color: #27ae60; }
+
+        /* --- LIGHTBOX PHOTO --- */
+        .lightbox-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9);
+            z-index: 11000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .lightbox-overlay.active { opacity: 1; pointer-events: auto; }
+        .lightbox-container { max-width: 85%; max-height: 80%; position: relative; text-align: center; }
+        .lightbox-img { max-width: 100%; max-height: 80vh; border: 4px solid #ffffff; border-radius: 5px; box-shadow: 0 0 25px rgba(0,0,0,0.5); object-fit: contain; display: block; margin: 0 auto; }
+        .lightbox-close { position: absolute; top: -45px; right: 0; color: #ffffff; font-size: 35px; background: none; border: none; cursor: pointer; }
+        .lightbox-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 2px solid #ffffff; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 11010; }
+        .arrow-left { left: -70px; } .arrow-right { right: -70px; }
+
+        @media (max-width: 768px) {
+            .lightbox-container { max-width: 95%; } .lightbox-arrow { width: 40px; height: 40px; font-size: 18px; }
+            .arrow-left { left: -10px; background: rgba(0,0,0,0.5); } .arrow-right { right: -10px; background: rgba(0,0,0,0.5); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="espace-etoiles">
+        <div class="etoile-filante ef-1"></div><div class="etoile-filante ef-2"></div>
+        <div class="etoile-filante ef-3"></div><div class="etoile-filante ef-4"></div>
+        <div class="etoile-filante ef-5"></div><div class="etoile-filante ef-6"></div>
+        <div class="etoile-filante ef-7"></div><div class="etoile-filante ef-8"></div>
+    </div>
+
+    <div class="header-banner">
+        <div class="logo-container">
+            <img src="IMG_20260612_181753.jpg" alt="Béatrice Guyonnet - Animation enfants" class="logo-image">
+        </div>
+    </div>
+
+    <div class="container">
+       
+        <div class="hero">
+            <span class="hero-decor-kids">🧑‍🤝‍🧑✨🧑‍🤝‍🧑</span>
+           
+            <div class="hero-layout">
+                <div class="hero-text-side">
+                    <h1>GARDERIE ÉPHÉMÈRE</h1>
+                    <div class="hero-subtitle">Offrir un service d'exception à vos clients et convives</div>
+                    <div class="hero-intro-text">
+                        <strong>Guyonnet Animation</strong> ré-enchante l'accueil des familles grâce à ce service sur mesure. Idéal pour les restaurants, salles de sport et événements du Pays Royannais.
+                    </div>
+                </div>
+
+                <div class="hero-image-side-grid">
+                    <img src="1000007106.png" alt="Illustration Garderie Éphémère 1" class="illustration-clean-small" onclick="ouvrirLightboxDirecte('1000007106.png')">
+                    <img src="photo-garderie2.jpg" alt="Illustration Garderie Éphémère 2" class="illustration-clean-small" onclick="ouvrirLightboxDirecte('photo-garderie2.jpg')">
+                </div>
+            </div>
+
+            <div class="hero-mix-box">
+                <div class="mix-slogan">✨ Les parents mangent, les enfants jouent ! ✨</div>
+                <div class="mix-grid">
+                    <div class="mix-item"><div class="mix-icon">🤝</div><div class="mix-text"><h3>Formule Clé en main</h3><p>Un service complet incluant tout le matériel nécessaire, des jeux parfaitement adaptés et une animatrice passionnée.</p></div></div>
+                    <div class="mix-item"><div class="mix-icon">🛡️</div><div class="mix-text"><h3>Animation & Sécurité</h3><p>Je m'occupe de l'intégralité de l'encadrement, de la sécurité et du divertissement des petits.</p></div></div>
+                    <div class="mix-item"><div class="mix-icon">📈</div><div class="mix-text"><h3>Plus de fidélisation</h3><p>Idéal pour les restaurants, salles de sport. Devenez le lieu préféré des familles dans tout le Pays Royannais.</p></div></div>
+                    <div class="mix-item"><div class="mix-icon">📅</div><div class="mix-text"><h3>Flexibilité totale</h3><p>Des prestations sur-mesure adaptés à vos besoins : déjeuners, dîners, séminaires.</p></div></div>
+                </div>
+            </div>
+
+            <div class="hero-bg-lines">
+                <div class="paint-stroke stroke-1"></div><div class="paint-stroke stroke-2"></div>
+                <div class="paint-stroke stroke-3"></div><div class="paint-stroke stroke-4"></div>
+            </div>
+        </div>
+
+        <div class="services-domicile-section">
+            <div class="services-carousel-wrapper" id="servicesCarouselWrapper">
+                <button type="button" class="services-carousel-btn sc-btn-left" id="servicesCarouselPrev">&#10094;</button>
+                <div class="services-carousel-container">
+                    <div class="services-carousel-track" id="servicesCarouselTrack">
+                        <div class="services-carousel-item" data-index="0"><img src="179.jpg" alt="Services à domicile 1"></div>
+                        <div class="services-carousel-item" data-index="1"><img src="domicile2.jpg" alt="Services à domicile 2"></div>
+                        <div class="services-carousel-item" data-index="2"><img src="domicile3.jpg" alt="Services à domicile 3"></div>
+                    </div>
+                </div>
+                <button type="button" class="services-carousel-btn sc-btn-right" id="servicesCarouselNext">&#10095;</button>
+            </div>
+
+            <div class="services-content">
+                <h2>Vos Services Personnalisés à Domicile ✨</h2>
+                <div class="service-item-block">
+                    <h3>🏠 Garde d'enfants à domicile</h3>
+                    <p>Un accompagnement sur mesure et sécurisant directement chez vous. Vos enfants retrouvent le confort de leur maison avec une présence bienveillante et attentive.</p>
+                </div>
+                <div class="service-item-block">
+                    <h3>🎉 Animation d'anniversaire</h3>
+                    <p>J'organise des animations festives, des jeux adaptés et des activités créatives directement chez vous pour faire pétiller cette journée spéciale.</p>
+                </div>
+            </div>
+        </div>
+       
+        <div class="summer-club-section">
+            <div class="badge-wrapper">
+                <div class="badge-magic-ring"></div>
+                <div class="tiny-star ts-1">⭐</div><div class="tiny-star ts-2">⭐</div>
+                <div class="tiny-star ts-3">⭐</div><div class="tiny-star ts-4">⭐</div>
+                <div class="star-badge"><div class="star-badge-text">Événement<br>Spécial<br>Été</div></div>
+            </div>
+
+            <h2> Accueil Enfants Été 🎈</h2>
+            <div class="summer-subtitle">⭐ Du 6 Juillet au 31 Août • Ouvert à tous (Camping et extérieurs) ⭐</div>
+           
+            <div class="summer-grid-details">
+                <div class="summer-card">
+                    <h3>📅 Quand & Où ?</h3>
+                    <ul>
+                        <li><strong>Période :</strong> Juillet & Août (Du Lundi au Vendredi)</li>
+                        <li><strong>Horaires :</strong> De 9h à midi (uniquement en matinée)</li>
+                        <li><strong>Lieu :</strong> CAMPING DU LAC, SAUJON</li>
+                    </ul>
+                </div>
+                <div class="summer-card">
+                    <h3>🎨 Le Concept : Au bon vouloir des enfants</h3>
+                    <ul>
+                        <li>Pour les enfants scolarisés <strong>jusqu'à 12 ans</strong></li>
+                        <li><strong>Libre choix :</strong> Dessin, sculpture, jeux créatifs...</li>
+                        <li>Zéro contrainte, matériel fourni !</li>
+                        <li><em>Ici, pas de programme figé : À vous la liberté !</em></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="carousel-wrapper" id="carouselWrapper">
+                <button type="button" class="carousel-btn c-btn-left" id="carouselPrev">&#10094;</button>
+                <div class="carousel-container">
+                    <div class="carousel-track" id="carouselTrack">
+                        <div class="carousel-item" data-index="0"><img src="club1.jpg" alt="Photo Club Enfants 1"></div>
+                        <div class="carousel-item" data-index="1"><img src="club2.jpg" alt="Photo Club Enfants 2"></div>
+                        <div class="carousel-item" data-index="2"><img src="club3.jpg" alt="Photo Club Enfants 3"></div>
+                        <div class="carousel-item" data-index="3"><img src="club4.jpg" alt="Photo Club Enfants 4"></div>
+                        <div class="carousel-item" data-index="4"><img src="club5.jpg" alt="Photo Club Enfants 5"></div>
+                        <div class="carousel-item" data-index="5"><img src="club6.jpg" alt="Photo Club Enfants 6"></div>
+                    </div>
+                </div>
+                <button type="button" class="carousel-btn c-btn-right" id="carouselNext">&#10095;</button>
+            </div>
+
+            <div class="summer-actions">
+                <button type="button" class="btn-summer-photos" id="openGalleryBtn">📸 Diaporama Plein Écran</button>
+            </div>
+
+            <div class="summer-info-banner">
+                <span>💰 Tarifs : 5,00 € l'heure / 12,50 € la matinée</span>
+                <span>📞 Réservations : 06 22 09 62 06</span>
+            </div>
+        </div>
+
+        <div class="games-evening-section">
+            <div class="games-title-container">
+                <div class="games-bea-icon"><img src="beatrice-photo.png" alt="Béatrice Guyonnet - Soirée Jeux"></div>
+                <h2>🎲 Soirées Jeux Conviviales avec Béa 🃏</h2>
+            </div>
+            <div class="games-subtitle">✨ Partage, Rire & Stratégie ✨</div>
+           
+            <div class="games-grid-details">
+                <div class="games-card" style="border-left-color: #27ae60;">
+                    <h3>📈 Boostez vos ventes !</h3>
+                    <ul>
+                        <li><strong>Attirez du monde :</strong> Idéal pour dynamiser vos soirées (familles, amis).</li>
+                        <li><strong>Consommation en hausse :</strong> Boostez la vente de vos planches apéro et boissons !</li>
+                    </ul>
+                </div>
+                <div class="games-card">
+                    <h3>🧩 Clé en main & Flexible</h3>
+                    <ul>
+                        <li><strong>Zéro contrainte :</strong> Jeux variés et explication des règles par une animatrice passionnée.</li>
+                        <li><strong>Sur-mesure :</strong> Animations régulières ou ponctuelles dans votre établissement.</li>
+                    </ul>
+                </div>
+                <div class="games-card" style="border-left-color: #aa00ff;">
+                    <h3>✨ Convivialité totale</h3>
+                    <ul>
+                        <li><strong>Créateur de lien :</strong> Je me déplace directement (bars, restaurants, pubs, campings).</li>
+                        <li>Une ambiance chaleureuse, ouverte à tous, pleine de rire.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="games-actions">
+                <button type="button" class="btn-games-booking" id="openContactModalBtn">Contactez Béa pour vos animations !</button>
+                <button type="button" class="btn-games-gallery" id="openGamesGalleryBtn">📸 Voir les photos des soirées</button>
+            </div>
+           
+            <div style="background: #01579b; color: #ffffff; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 16px;">
+                📞 Organiser une soirée jeux dans votre établissement : 06 22 09 62 06
+            </div>
+        </div>
+
+        <h2>Nos points forts ⭐</h2>
+        <div class="badges-grid">
+            <div class="badge-card"><div class="badge-icon">🛡️</div><div class="badge-text">Sécurité &<br>Bienveillance</div></div>
+            <div class="badge-card"><div class="badge-icon">🏅</div><div class="badge-text">+30 Ans<br>d'Expérience</div></div>
+            <div class="badge-card"><div class="badge-icon">🎨</div><div class="badge-text">Solution<br>Clé en Main</div></div>
+            <div class="badge-card"><div class="badge-icon">🤝</div><div class="badge-text">Création de<br>Lien Social</div></div>
+        </div>
+
+        <footer>
+            <div class="fb-button-container">
+                <a href="https://www.facebook.com/VOTRE_PAGE" target="_blank" rel="noopener" class="fb-link">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+            </div>
+            <div style="margin-bottom: 15px; font-size: 15px; font-weight: bold;">
+                <span style="color: #e67e22; margin-right: 15px;">✉️ beatrice.guyonnet.17@gmail.com</span>
+                <span style="color: #27ae60;">📞 06 22 09 62 06</span>
+            </div>
+            <div>🎈 &copy; 2026 Guyonnet Animation - Tous droits réservés. 🎈</div>
+            <div class="siret-text">SIRET : 980 506 786 00022</div>
+        </footer>
+    </div>
+
+    <div class="contact-modal-overlay" id="contactModal">
+        <div class="contact-modal-box">
+            <button type="button" class="contact-modal-close" id="closeContactModalBtn">&times;</button>
+            <h3>Contactez Béatrice ✨</h3>
+            <p>Choisissez le moyen qui vous convient le mieux :</p>
+            <a href="mailto:beatrice.guyonnet.17@gmail.com?subject=Demande%20d'informations" class="modal-contact-btn btn-email">✉️ Envoyer un E-mail</a>
+            <a href="tel:0622096206" class="modal-contact-btn btn-phone">📞 Appeler le 06 22 09 62 06</a>
+            <div style="margin: 20px 0; border-top: 1px dashed #ebdcb9;"></div>
+            <div style="background-color: #fffaf0; border: 1px solid #ffcc66; border-radius: 8px; padding: 12px; font-size: 14px; text-align: left; line-height: 1.5;">
+                <div style="margin-bottom: 8px;"><strong>✉️ Mon e-mail :</strong><br><span style="user-select: all; color: #d35400; font-weight: bold;">beatrice.guyonnet.17@gmail.com</span></div>
+                <div><strong>📞 Mon téléphone :</strong><br><span style="user-select: all; color: #27ae60; font-weight: bold;">06 22 09 62 06</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lightbox-overlay" id="lightbox">
+        <div class="lightbox-container">
+            <button type="button" class="lightbox-close" id="closeLightboxBtn">&times;</button>
+            <button type="button" class="lightbox-arrow arrow-left" id="prevImgBtn">&#10094;</button>
+            <img src="" alt="Photo en grand" class="lightbox-img" id="lightboxMainImg">
+            <button type="button" class="lightbox-arrow arrow-right" id="nextImgBtn">&#10095;</button>
+        </div>
+    </div>
+
+    <script>
+        function ouvrirLightboxDirecte(src) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxMainImg');
+            if(lightbox && lightboxImg) {
+                lightboxImg.src = src;
+                lightbox.classList.add('active');
+                document.getElementById('prevImgBtn').style.display = 'none';
+                document.getElementById('nextImgBtn').style.display = 'none';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+
+            /* --- 1. ÉTOILES FILANTES --- */
+            const nuancesMagiques = ['#ff1493', '#ffaa00', '#00f0ff', '#27ae60', '#ff5722', '#aa00ff', '#ffffff'];
+            function appliquerCouleurAleatoire(etoile) {
+                const indexAleatoire = Math.floor(Math.random() * nuancesMagiques.length);
+                etoile.style.setProperty('--clr-etoile', nuancesMagiques[indexAleatoire]);
+            }
+            document.querySelectorAll('.etoile-filante').forEach(etoile => {
+                appliquerCouleurAleatoire(etoile);
+                etoile.addEventListener('animationiteration', () => { appliquerCouleurAleatoire(etoile); });
+            });
+
+
+            /* --- 2. CARROUSEL INTERACTIF : CLUB ENFANTS --- */
+            const track = document.getElementById('carouselTrack');
+            const prevBtnCarousel = document.getElementById('carouselPrev');
+            const nextBtnCarousel = document.getElementById('carouselNext');
+            const carouselWrapper = document.getElementById('carouselWrapper');
+           
+            let PositionCarrousel = 0;
+            let autoPlayTimer = null;
+
+            function getItemsPerView() {
+                if (window.innerWidth <= 480) return 1;
+                if (window.innerWidth <= 768) return 2;
+                return 3;
+            }
+
+            function deplacerCarrousel(direction) {
+                const items = document.querySelectorAll('.carousel-item');
+                if (items.length === 0 || !track) return;
+               
+                const itemsPerView = getItemsPerView();
+                const maxPosition = items.length - itemsPerView;
+
+                if (direction === 'next') {
+                    PositionCarrousel = (PositionCarrousel >= maxPosition) ? 0 : PositionCarrousel + 1;
+                } else {
+                    PositionCarrousel = (PositionCarrousel <= 0) ? maxPosition : PositionCarrousel - 1;
+                }
+
+                const itemWidth = items[0].getBoundingClientRect().width + 15;
+                track.style.transform = `translateX(-${PositionCarrousel * itemWidth}px)`;
+            }
+
+            if (nextBtnCarousel && prevBtnCarousel) {
+                nextBtnCarousel.addEventListener('click', () => { deplacerCarrousel('next'); relancerAutoPlay(); });
+                prevBtnCarousel.addEventListener('click', () => { deplacerCarrousel('prev'); relancerAutoPlay(); });
+            }
+
+            function lancerAutoPlay() {
+                if (autoPlayTimer === null) {
+                    autoPlayTimer = setInterval(() => { deplacerCarrousel('next'); }, 3000);
+                }
+            }
+            function stopperAutoPlay() { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+            function relancerAutoPlay() { stopperAutoPlay(); lancerAutoPlay(); }
+
+            if (carouselWrapper) {
+                carouselWrapper.addEventListener('mouseenter', stopperAutoPlay);
+                carouselWrapper.addEventListener('mouseleave', lancerAutoPlay);
+            }
+            lancerAutoPlay();
+
+
+            /* --- 3. CARROUSEL INTERACTIF : SERVICES À DOMICILE --- */
+            const sTrack = document.getElementById('servicesCarouselTrack');
+            const sPrevBtn = document.getElementById('servicesCarouselPrev');
+            const sNextBtn = document.getElementById('servicesCarouselNext');
+            const sWrapper = document.getElementById('servicesCarouselWrapper');
+           
+            let sPosition = 0;
+            let sAutoPlayTimer = null;
+            const sImagesList = ['179.jpg', 'domicile2.jpg', 'domicile3.jpg'];
+
+            function deplacerServicesCarousel(direction) {
+                const sItems = document.querySelectorAll('.services-carousel-item');
+                if (sItems.length === 0 || !sTrack) return;
+               
+                if (direction === 'next') {
+                    sPosition = (sPosition >= sItems.length - 1) ? 0 : sPosition + 1;
+                } else {
+                    sPosition = (sPosition <= 0) ? sItems.length - 1 : sPosition - 1;
+                }
+               
+                sTrack.style.transform = `translateX(-${sPosition * 100}%)`;
+            }
+
+            if(sNextBtn && sPrevBtn) {
+                sNextBtn.addEventListener('click', () => { deplacerServicesCarousel('next'); relancerSAutoPlay(); });
+                sPrevBtn.addEventListener('click', () => { deplacerServicesCarousel('prev'); relancerSAutoPlay(); });
+            }
+
+            function lancerSAutoPlay() {
+                if(sAutoPlayTimer === null) {
+                    sAutoPlayTimer = setInterval(() => { deplacerServicesCarousel('next'); }, 3500);
+                }
+            }
+            function stopperSAutoPlay() { clearInterval(sAutoPlayTimer); sAutoPlayTimer = null; }
+            function relancerSAutoPlay() { stopperSAutoPlay(); lancerSAutoPlay(); }
+
+            if(sWrapper) {
+                sWrapper.addEventListener('mouseenter', stopperSAutoPlay);
+                sWrapper.addEventListener('mouseleave', lancerSAutoPlay);
+            }
+            lancerSAutoPlay();
+
+            document.querySelectorAll('.services-carousel-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+                    ouvrirLightbox(sImagesList, idx);
+                });
+            });
+
+
+            /* --- 4. POP-UP CONTACT --- */
+            const contactModal = document.getElementById('contactModal');
+            const openContactBtn = document.getElementById('openContactModalBtn');
+            const closeContactBtn = document.getElementById('closeContactModalBtn');
+           
+            if (openContactBtn && contactModal) {
+                openContactBtn.addEventListener('click', () => { contactModal.classList.add('active'); });
+            }
+            if (closeContactBtn && contactModal) {
+                closeContactBtn.addEventListener('click', () => { contactModal.classList.remove('active'); });
+            }
+
+
+            /* --- 5. VISIONNEUSE FINALE PHOTOS (LIGHTBOX) --- */
+            const listeImagesClub = ['club1.jpg', 'club2.jpg', 'club3.jpg', 'club4.jpg', 'club5.jpg', 'club6.jpg'];
+            const listeImagesSoirees = ['soiree1.jpg', 'soiree2.jpg', 'soiree3.jpg', 'soiree4.jpg'];
+           
+            let listeActuelle = [];
+            let indexImageActuelle = 0;
+
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxMainImg');
+            const openClubGalleryBtn = document.getElementById('openGalleryBtn');
+            const openGamesGalleryBtn = document.getElementById('openGamesGalleryBtn');
+            const closeLightboxBtn = document.getElementById('closeLightboxBtn');
+            const prevBtnLightbox = document.getElementById('prevImgBtn');
+            const nextBtnLightbox = document.getElementById('nextImgBtn');
+
+            function ouvrirLightbox(liste, index) {
+                if (!lightbox || !lightboxImg) return;
+                listeActuelle = liste;
+                indexImageActuelle = index;
+                lightboxImg.src = listeActuelle[indexImageActuelle];
+                prevBtnLightbox.style.display = 'flex';
+                nextBtnLightbox.style.display = 'flex';
+                lightbox.classList.add('active');
+            }
+
+            if (openClubGalleryBtn) {
+                openClubGalleryBtn.addEventListener('click', () => { ouvrirLightbox(listeImagesClub, 0); });
+            }
+            if (openGamesGalleryBtn) {
+                openGamesGalleryBtn.addEventListener('click', () => { ouvrirLightbox(listeImagesSoirees, 0); });
+            }
+
+            document.querySelectorAll('.carousel-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const indexClique = parseInt(e.currentTarget.getAttribute('data-index'));
+                    ouvrirLightbox(listeImagesClub, indexClique);
+                });
+            });
+
+            if (closeLightboxBtn && lightbox) {
+                closeLightboxBtn.addEventListener('click', () => { lightbox.classList.remove('active'); });
+            }
+            if (lightbox) {
+                lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.classList.remove('active'); });
+            }
+
+            if (prevBtnLightbox && lightboxImg) {
+                prevBtnLightbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(listeActuelle.length === 0) return;
+                    indexImageActuelle = (indexImageActuelle - 1 + listeActuelle.length) % listeActuelle.length;
+                    lightboxImg.src = listeActuelle[indexImageActuelle];
+                });
+            }
+            if (nextBtnLightbox && lightboxImg) {
+                nextBtnLightbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(listeActuelle.length === 0) return;
+                    indexImageActuelle = (indexImageActuelle + 1) % listeActuelle.length;
+                    lightboxImg.src = listeActuelle[indexImageActuelle];
+                });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (lightbox && lightbox.classList.contains('active')) {
+                    if (e.key === "ArrowRight" && nextBtnLightbox && nextBtnLightbox.style.display !== 'none') nextBtnLightbox.click();
+                    if (e.key === "ArrowLeft" && prevBtnLightbox && prevBtnLightbox.style.display !== 'none') prevBtnLightbox.click();
+                    if (e.key === "Escape") lightbox.classList.remove('active');
+                }
+            });
+
+        });
+    </script>
+</body>
+</html> 
